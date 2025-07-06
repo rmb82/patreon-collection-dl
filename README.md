@@ -9,6 +9,6 @@ This script:
 ### 🛠 Requirements
 
 ```bash
-pip install playwright browser-cookie3
+pip install yt-dlp playwright browser-cookie3
 playwright install
 ```
