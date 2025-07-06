@@ -8,7 +8,7 @@ from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeo
 import browser_cookie3
 
 BTN_TEXT = "charger plus"
-YT_DLP_CMD = "yt-dlp --cookies-from-browser chrome --impersonate chrome --no-playlist --no-write-info-json --no-write-comments --no-write-subs"
+YT_DLP_CMD = "yt-dlp --cookies-from-browser chrome --no-playlist --no-write-info-json --no-write-comments --no-write-subs --no-write-auto-subs --no-write-thumbnail --impersonate chrome"
 
 def extract_cookies_for_playwright():
     cj = browser_cookie3.chrome(domain_name="patreon.com")
@@ -26,7 +26,7 @@ def extract_cookies_for_playwright():
             })
     return cookies
 
-def wait_for_button(page, timeout=10):
+def wait_for_button(page, timeout=5):
     """Attend l'apparition du bouton BTN_TEXT jusqu'à timeout secondes."""
     print(f"Attente du bouton '{BTN_TEXT}' (jusqu'à {timeout} secondes si besoin)...")
     for _ in range(timeout * 2):  # toutes les 0.5s jusqu'à timeout
@@ -46,7 +46,7 @@ def wait_for_button(page, timeout=10):
 def click_load_more_buttons(page):
     click_count = 0
     while True:
-        if not wait_for_button(page, timeout=10):
+        if not wait_for_button(page, timeout=5):
             break  # pas de bouton, fin
         buttons = page.query_selector_all("button")
         found = False
@@ -76,12 +76,9 @@ def scroll_and_extract_links(collection_url):
         page.goto(collection_url)
         # attend que la liste des posts soit présente (div de collection ou premier post)
         print("Attente du chargement initial de la page...")
-        try:
-            page.wait_for_load_state("domcontentloaded")
-            # Optionnel : attends la présence d'un post Patreon
-            page.wait_for_selector("a[href^='/posts/']", timeout=15000)
-        except PlaywrightTimeoutError:
-            print("⚠️ Timeout : les posts Patreon ne sont pas détectés, extraction prématurée...")
+        page.wait_for_load_state("domcontentloaded")
+        # Optionnel : attend 2s de plus pour être sûr que tout est là
+        time.sleep(2)
         print(f"Clique automatique sur tous les boutons '{BTN_TEXT}' (case-insensitive)...")
         click_load_more_buttons(page)
 
